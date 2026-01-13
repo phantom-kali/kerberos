@@ -8,7 +8,7 @@ import base64
 import time
 
 # Hardcoded key
-SERVICE_KEY = b'serviceseckey123'
+SERVICE_KEY = b'serviceseckeyyyy'
 
 def decrypt(data, key):
     data = base64.b64decode(data)
@@ -23,11 +23,8 @@ def encrypt(data, key):
     ciphertext, tag = cipher.encrypt_and_digest(data)
     return base64.b64encode(cipher.nonce + tag + ciphertext).decode()
 
-def handle_secure_connection(conn, addr):
-    # Receive AP_REQ: ST + authenticator
-    data = conn.recv(4096).decode()
-    request = json.loads(data)
-    
+def handle_secure_connection(conn, addr, request):
+    # AP_REQ already received and parsed in start_service_server
     if request['type'] != 'AP':
         conn.sendall(json.dumps({'error': 'Invalid request type'}).encode())
         return
@@ -69,7 +66,7 @@ def handle_secure_connection(conn, addr):
     except Exception as e:
         conn.sendall(json.dumps({'error': str(e)}).encode())
 
-def handle_insecure_connection(conn, addr):
+def handle_insecure_connection(conn, addr, request):
     conn.sendall(json.dumps({'status': 'insecure_connected'}).encode())
     print(f"Service: Insecure connection from {addr}")
     
@@ -94,14 +91,24 @@ def start_service_server(host='localhost', port=9999):
         while True:
             conn, addr = s.accept()
             with conn:
-                # Peek at first message to determine mode
-                data = conn.recv(4096).decode()
-                request = json.loads(data)
+                try:
+                    # Peek at first message to determine mode
+                    data = conn.recv(4096).decode()
+                    if not data:
+                        # Empty connection, likely a health check
+                        continue
+                    request = json.loads(data)
+                except json.JSONDecodeError:
+                    # Invalid JSON, ignore and continue
+                    continue
+                except Exception as e:
+                    print(f"Error receiving data: {e}")
+                    continue
                 
                 if request['type'] == 'AP':
-                    handle_secure_connection(conn, addr)
+                    handle_secure_connection(conn, addr, request)
                 elif request['type'] == 'INSECURE':
-                    handle_insecure_connection(conn, addr)
+                    handle_insecure_connection(conn, addr, request)
                 else:
                     conn.sendall(json.dumps({'error': 'Invalid mode'}).encode())
 
