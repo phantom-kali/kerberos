@@ -136,33 +136,26 @@ def kerberos_mode():
             print(f"Service: {response}")
 
 def insecure_mode():
-    print("Insecure mode")
-    
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((SERVICE_HOST, SERVICE_PORT))
-        
-        request = {'type': 'INSECURE'}
-        s.sendall(json.dumps(request).encode())
-        
-        response = json.loads(s.recv(4096).decode())
-        if 'error' in response:
-            raise ValueError(response['error'])
-        print("Connected insecurely to service")
-        
-        # Insecure chat
-        while True:
-            message = input("Client message: ")
-            s.sendall(message.encode())
-            
-            if message.lower() == 'exit':
-                break
-            
-            response = s.recv(4096).decode()
-            print(f"Service: {response}")
+    """SECURITY PATCH: Insecure mode has been disabled."""
+    print("\n" + "="*60)
+    print("  ⚠️  SECURITY ALERT: INSECURE MODE BLOCKED  ⚠️")
+    print("="*60)
+    print("\n  This system has been patched for security compliance.")
+    print("  Insecure communication is NO LONGER PERMITTED.")
+    print("\n  To communicate with the service, you MUST use Kerberos")
+    print("  authentication which provides:")
+    print("    ✓ Encrypted communication")
+    print("    ✓ Mutual authentication")
+    print("    ✓ Message integrity")
+    print("\n  Usage: python client.py kerberos")
+    print("\n" + "="*60 + "\n")
+    sys.exit(1)
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print("Usage: python client.py [kerberos|insecure]")
+        print("\n⚠️  SECURE AUTHENTICATION REQUIRED")
+        print("Usage: python client.py kerberos")
+        print("\nNote: Insecure mode has been disabled for security reasons.")
         sys.exit(1)
     
     mode = sys.argv[1].lower()
@@ -171,4 +164,6 @@ if __name__ == '__main__':
     elif mode == 'insecure':
         insecure_mode()
     else:
-        print("Invalid mode. Use 'kerberos' or 'insecure'")
+        print("\n⚠️  Invalid mode specified.")
+        print("Only Kerberos authentication is supported.")
+        print("Usage: python client.py kerberos")

@@ -67,20 +67,15 @@ def handle_secure_connection(conn, addr, request):
         conn.sendall(json.dumps({'error': str(e)}).encode())
 
 def handle_insecure_connection(conn, addr, request):
-    conn.sendall(json.dumps({'status': 'insecure_connected'}).encode())
-    print(f"Service: Insecure connection from {addr}")
-    
-    while True:
-        message = conn.recv(4096).decode()
-        if not message:
-            break
-        print(f"Client (insecure): {message}")
-        
-        if message.lower() == 'exit':
-            break
-        
-        response = input("Service response: ")
-        conn.sendall(response.encode())
+    """Reject insecure connections - Kerberos authentication is required."""
+    error_msg = {
+        'error': 'INSECURE MODE BLOCKED: Authentication denied. '
+                 'This service requires Kerberos authentication. '
+                 'Please use Kerberos mode for secure communication.',
+        'status': 'rejected'
+    }
+    conn.sendall(json.dumps(error_msg).encode())
+    print(f"Service: REJECTED insecure connection attempt from {addr} - Kerberos required")
 
 def start_service_server(host='0.0.0.0', port=9999):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -108,9 +103,10 @@ def start_service_server(host='0.0.0.0', port=9999):
                 if request['type'] == 'AP':
                     handle_secure_connection(conn, addr, request)
                 elif request['type'] == 'INSECURE':
+                    # SECURITY PATCH: Block all insecure connections
                     handle_insecure_connection(conn, addr, request)
                 else:
-                    conn.sendall(json.dumps({'error': 'Invalid mode'}).encode())
+                    conn.sendall(json.dumps({'error': 'Invalid mode. Only Kerberos (AP) authentication is allowed.'}).encode())
 
 if __name__ == '__main__':
     start_service_server()
