@@ -9,9 +9,9 @@ import base64
 import time
 
 # Hardcoded keys (16 bytes for AES-128)
-CLIENT_KEY = b'clientsecretkey1'
-TGS_KEY = b'tgssecretkey123'
-SERVICE_KEY = b'serviceseckey123'
+CLIENT_KEY = b'clientsecretkeyy'
+TGS_KEY = b'tgssecretkeyyyyy'
+SERVICE_KEY = b'serviceseckeyyyy'
 
 # Lifetime in seconds
 TICKET_LIFETIME = 3600  # 1 hour
@@ -103,8 +103,18 @@ def start_kdc_server(host='localhost', port=8888):
         while True:
             conn, addr = s.accept()
             with conn:
-                data = conn.recv(4096).decode()
-                request = json.loads(data)
+                try:
+                    data = conn.recv(4096).decode()
+                    if not data:
+                        # Empty connection, likely a health check
+                        continue
+                    request = json.loads(data)
+                except json.JSONDecodeError:
+                    # Invalid JSON, ignore and continue
+                    continue
+                except Exception as e:
+                    print(f"Error receiving data: {e}")
+                    continue
                 
                 response = {}
                 try:
