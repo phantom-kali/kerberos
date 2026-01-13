@@ -7,9 +7,10 @@ from Crypto.Cipher import AES
 import base64
 import time
 import sys
+import subprocess
 
 # Hardcoded key
-CLIENT_KEY = b'clientsecretkey1'
+CLIENT_KEY = b'clientsecretkeyy'
 
 # Hosts and ports
 KDC_HOST = 'localhost'
@@ -32,6 +33,15 @@ def decrypt(data, key):
     ciphertext = data[32:]
     cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
     return cipher.decrypt_and_verify(ciphertext, tag)
+
+def is_server_running(host, port):
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(1)
+            s.connect((host, port))
+        return True
+    except:
+        return False
 
 def request_tgt():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -76,7 +86,13 @@ def request_st(tgt, client_tgs_session_key, service_name='FileServer'):
 
 def kerberos_mode():
     print("Kerberos mode")
-    
+
+    # Check if KDC server is running, start if not
+    if not is_server_running(KDC_HOST, KDC_PORT):
+        print("Starting KDC server...")
+        subprocess.Popen(['python', 'kdc.py'])
+        time.sleep(2)
+
     # Step 1: Get TGT
     tgt, client_tgs_session_key = request_tgt()
     print("Received TGT")
