@@ -11,12 +11,13 @@ import subprocess
 
 # Hardcoded key
 CLIENT_KEY = b'clientsecretkeyy'
+import os
 
-# Hosts and ports
-KDC_HOST = 'localhost'
-KDC_PORT = 8888
-SERVICE_HOST = 'localhost'
-SERVICE_PORT = 9999
+# Hosts and ports (configurable via environment variables)
+KDC_HOST = os.getenv('KDC_HOST', 'localhost')
+KDC_PORT = int(os.getenv('KDC_PORT', '8888'))
+SERVICE_HOST = os.getenv('SERVICE_HOST', 'localhost')
+SERVICE_PORT = int(os.getenv('SERVICE_PORT', '9999'))
 
 # Client name
 CLIENT_NAME = 'Alice'
