@@ -94,7 +94,7 @@ def handle_tgs_request(tgt_enc, service_name, authenticator_enc):
         'client_response': client_response_enc.decode()
     }
 
-def start_kdc_server(host='localhost', port=8888):
+def start_kdc_server(host='0.0.0.0', port=8888):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, port))
         s.listen()
