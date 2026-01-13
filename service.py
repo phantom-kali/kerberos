@@ -82,7 +82,7 @@ def handle_insecure_connection(conn, addr, request):
         response = input("Service response: ")
         conn.sendall(response.encode())
 
-def start_service_server(host='localhost', port=9999):
+def start_service_server(host='0.0.0.0', port=9999):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, port))
         s.listen()
